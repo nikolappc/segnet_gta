@@ -20,6 +20,7 @@ FLAGS = flags.FLAGS
 
 # Basic arguments
 flags.DEFINE_string('arch', 'segnet', 'Network architecure')
+# flags.DEFINE_string('outdir', 'output/camvid', 'Output directory')
 flags.DEFINE_string('outdir', 'output/camvid', 'Output directory')
 
 # Dataset arguments
@@ -29,7 +30,8 @@ flags.DEFINE_string('tfrecord',
 
 # Model arguments
 flags.DEFINE_integer('channel', 3, 'Channel of an input image')
-flags.DEFINE_integer('num_class', 12, 'Number of class to classify')
+# flags.DEFINE_integer('num_class', 12, 'Number of class to classify')
+flags.DEFINE_integer('num_class', 3, 'Number of class to classify')
 flags.DEFINE_integer('height', 224, 'Input height')
 flags.DEFINE_integer('width', 224, 'Input width')
 
