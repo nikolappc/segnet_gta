@@ -21,12 +21,12 @@ FLAGS = flags.FLAGS
 # Basic arguments
 flags.DEFINE_string('arch', 'segnet', 'Network architecure')
 # flags.DEFINE_string('outdir', 'output/camvid', 'Output directory')
-flags.DEFINE_string('outdir', 'output/camvid', 'Output directory')
+flags.DEFINE_string('outdir', 'output', 'Output directory')
 
 # Dataset arguments
-flags.DEFINE_string('dataset', 'camvid', 'Dataset name')
+flags.DEFINE_string('dataset', 'gta', 'Dataset name')
 flags.DEFINE_string('tfrecord',
-    '/tmp/data/camvid/camvid-train.tfrecord', 'TFRecord path')
+    'tfrecords/gta-train.tfrecord', 'TFRecord path')
 
 # Model arguments
 flags.DEFINE_integer('channel', 3, 'Channel of an input image')
@@ -37,11 +37,11 @@ flags.DEFINE_integer('width', 224, 'Input width')
 
 # Training arguments
 flags.DEFINE_integer('batch_size', 5, 'Batch size')
-flags.DEFINE_integer('iteration', 10000, 'Number of training iterations')
+flags.DEFINE_integer('iteration', 1000, 'Number of training iterations')
 flags.DEFINE_integer('num_threads', 8, 'Number of threads to read batches')
 flags.DEFINE_integer('min_after_dequeue', 10, 'min_after_dequeue')
 flags.DEFINE_integer('seed', 1234, 'Random seed')
-flags.DEFINE_integer('snapshot', 2000, 'Snapshot')
+flags.DEFINE_integer('snapshot', 100, 'Snapshot')
 flags.DEFINE_integer('print_step', 1, 'Number of step to print training log')
 flags.DEFINE_string('optimizer', 'sgd', 'optimizer')
 flags.DEFINE_float('learning_rate', 0.01, 'learning rate')

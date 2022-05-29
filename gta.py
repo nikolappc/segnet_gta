@@ -2,17 +2,11 @@
     This script is to convert CamVid dataset to tfrecord format.
 """
 
-import os
 import argparse
-import numpy as np
-import tensorflow as tf
-from PIL import Image
+import os.path
 
-from utils import make_dirs
+from poly import derive_image_segments, derive_masks
 from tfrecord import *
-
-from poly import Segment, ImageSegments, Polygon, Line, Point, SegmentsDebugger, Shape, gen_next_index, \
-    generate_first_line, generate_line, is_inverting_line, derive_image_segments, derive_masks
 
 H = 692
 W = 1283
@@ -60,8 +54,10 @@ class_names = {
 
 def parse(line, root):
     line = line.rstrip()
-    line = line.replace('/SegNet/CamVid', root)
-    return line.split(' ')
+    img_path, label_path = line.split(' ')
+    img_path = os.path.join(root, img_path)
+    label_path = os.path.join(root, label_path)
+    return img_path, label_path
 
 
 def load_path(txt_path, root):
@@ -114,7 +110,7 @@ class ImageInfo:
 
 
 def deduce_image_infos(indir, ext="jpg", json_ext="labels.json", label_ext="label"):
-    file_names = os.listdir()
+    file_names = os.listdir(indir)
 
     image_infos = list(
         map(
@@ -122,7 +118,7 @@ def deduce_image_infos(indir, ext="jpg", json_ext="labels.json", label_ext="labe
             ImageInfo(
                 path=f"{elem[1][0]}.{ext}",
                 json=elem[0],
-                label=f"{elem[1][0]}.{label_ext}",
+                label=f"{elem[1][0]}.{label_ext}.png",
                 indir=indir
             ),
             filter(
@@ -139,10 +135,13 @@ def deduce_image_infos(indir, ext="jpg", json_ext="labels.json", label_ext="labe
 
 def gen_labels(image_infos):
     for image_info in image_infos:
+        if os.path.exists(image_info.label):
+            continue
         image_segments = derive_image_segments(image_info.json, json_class_to_class_id, W, H)
 
-        out, _ = derive_masks(image_segments, lambda x: cmap[x], len(class_names))
+        out, _ = derive_masks(image_segments, lambda x: x)
 
+        out = out.astype(np.uint8)
         img = Image.fromarray(out)
         img.save(image_info.label)
 
@@ -169,14 +168,14 @@ W = 1283
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--outdir', type=str, default='lighting_variations_data',
+    parser.add_argument('--outdir', type=str, default='tfrecords',
                         help='Path to save tfrecord')
-    parser.add_argument('--indir', type=str, default='tfrecords',
+    parser.add_argument('--indir', type=str, default='lighting_variations_data',
                         help='Dataset path.')
     parser.add_argument('--target', type=str, default='train',
                         help='train, val, test')
     parser.add_argument('--gen',
-                        action='store_false',
+                        action='store_true',
                         help='generates labeled images', )
     args = parser.parse_args()
 
@@ -187,7 +186,7 @@ def main():
 
     pairs = create_pairs(image_infos)
 
-    fname = 'camvid-{}.tfrecord'.format(args.target)
+    fname = 'gta-{}.tfrecord'.format(args.target)
     convert_to_tfrecord(pairs, args.outdir, fname)
 
 

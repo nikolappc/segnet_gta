@@ -1,5 +1,7 @@
+import abc
 import functools
 import gc
+import json
 import math
 
 import numpy as np
@@ -48,7 +50,35 @@ def bound_number(x, a, b):
     return x
 
 
-class SegmentsDebugger:
+class Debugger:
+    @abc.abstractmethod
+    def resolve_print(self, key, string):
+        pass
+
+    @abc.abstractmethod
+    def resolve_func(self, key, func):
+        pass
+
+    @abc.abstractmethod
+    def resolve_value(self, key, default):
+        pass
+
+
+class DummyDebugger(Debugger):
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def resolve_print(self, key, string):
+        pass
+
+    def resolve_func(self, key, func):
+        pass
+
+    def resolve_value(self, key, default):
+        pass
+
+
+class SegmentsDebugger(Debugger):
     def __init__(self, debug_map=None):
         if debug_map is None:
             self.__debug = {
@@ -85,9 +115,10 @@ class SegmentsDebugger:
 
 class Debuggable:
     def __init__(self):
-        self._debugger = None
+        super(Debuggable, self).__init__()
+        self._debugger = DummyDebugger()
 
-    def apply_debugger(self, debugger: SegmentsDebugger):
+    def apply_debugger(self, debugger: Debugger):
         self._debugger = debugger
 
 
@@ -103,6 +134,7 @@ class Shape:
 
 class ShapeDependable:
     def __init__(self):
+        super(ShapeDependable, self).__init__()
         self._shape = None
 
     def apply_shape(self, shape: Shape):
@@ -215,7 +247,7 @@ class PointLine(Debuggable):
         y1_s = self.y1 * scale
         x2_s = self.x2 * scale
         y2_s = self.y2 * scale
-
+        print(self)
         self._debugger.resolve_print(
             "PRINT_SCALING",
             f"[({self.x1:.2f}, {self.y1:.2f}) -> "
@@ -818,7 +850,8 @@ class ImageSegments(Debuggable, ShapeDependable):
         self.__classes = classes
         self.__debugger = debugger
         self.__dim = dim
-        self.apply_debugger(debugger)
+        if debugger is not None:
+            self.apply_debugger(debugger)
         self.apply_shape(self.__dim)
 
     def apply_debugger(self, debugger: SegmentsDebugger):
@@ -856,8 +889,8 @@ class ImageSegments(Debuggable, ShapeDependable):
         return self._shape.H
 
 
-def derive_image_segments(json, class_map, w, h, debugger=None):
-    with open(json, "r") as f:
+def derive_image_segments(json_path, class_map, w, h, debugger=None):
+    with open(json_path, "r") as f:
         json_string = "".join(f.readlines())
         json_object = json.loads(json_string)
 
@@ -980,13 +1013,16 @@ def derive_image_segments(json, class_map, w, h, debugger=None):
     return mask
 
 
-def derive_masks(image_segments: ImageSegments, class_id_to_value, dim, scale=2.0):
+def derive_masks(image_segments: ImageSegments, class_id_to_value, dim=None, scale=2.0):
     h, w = image_segments.h, image_segments.w
     image_segments.scale_up(scale=scale)
 
     classes = np.array(list(image_segments.classes))
 
-    out = np.zeros((h, w, dim))
+    if dim is None:
+        out = np.zeros((h, w))
+    else:
+        out = np.zeros((h, w, dim))
 
     LINE_VAL = 33
 
@@ -1009,7 +1045,7 @@ def derive_masks(image_segments: ImageSegments, class_id_to_value, dim, scale=2.
 
         for polygon in polygons:
 
-            points_on_line = polygon.generate_points_on_polygon(max_H=H_s, max_W=W_s)
+            points_on_line = polygon.generate_points_on_polygon(max_h=H_s, max_w=W_s)
 
             center_point = polygon.generate_center_point(max_h=H_s, max_w=W_s)
 

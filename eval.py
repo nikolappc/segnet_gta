@@ -13,7 +13,7 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 
-from camvid import load_splited_path
+from gta import load_splited_path
 from inputs import read_image_label_from_queue, scale_fixed_size
 from utils import make_dirs, save_img, vis_semseg
 
@@ -22,18 +22,18 @@ FLAGS = flags.FLAGS
 
 # Basic arguments
 flags.DEFINE_string('arch', 'segnet', 'Network architecure')
-flags.DEFINE_string('outdir', 'output/camvid', 'Output directory')
+flags.DEFINE_string('outdir', 'output/gta', 'Output directory')
 flags.DEFINE_string('resdir', 'results', 'Directory to visualize prediction')
 
 # Dataset arguments
-flags.DEFINE_string('dataset', 'camvid', 'Dataset name')
-flags.DEFINE_string('checkpoint_dir', 'output/trained_model/checkpoint_dir',
+flags.DEFINE_string('dataset', 'gta', 'Dataset name')
+flags.DEFINE_string('checkpoint_dir', 'output/segnet/trained_model',
     'Directory where to read model checkpoint.')
-flags.DEFINE_string('indir', 'data/CamVid', 'Dataset directory')
+flags.DEFINE_string('indir', 'lighting_variations_data', 'Dataset directory')
 
 # Evaluation arguments
 flags.DEFINE_integer('channel', 3, 'Channel of an input image')
-flags.DEFINE_integer('num_class', 12, 'Number of class to classify')
+flags.DEFINE_integer('num_class', 3, 'Number of class to classify')
 flags.DEFINE_integer('batch_size', 1, 'Batch size')
 flags.DEFINE_integer('height', 224, 'Input height')
 flags.DEFINE_integer('width', 224, 'Input width')

@@ -1,3 +1,6 @@
 __pycache__
 data
 output
+lighting_variations_data
+tfrecords
+venv
